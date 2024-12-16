@@ -51,24 +51,11 @@ public class MainActivity extends AppCompatActivity {
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        sk_fondo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                if (b) {
-                    mp_fondo.seekTo(i);
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
+        mp_fondo = MediaPlayer.create(getApplicationContext(), R.raw.fondo);
+        mp_fondo.setLooping(true);
+        sk_fondo.setMax(mp_fondo.getDuration());
+        mp_fondo.start();
+        startTimer();
 
         btn_play.setOnClickListener(view -> {
             if (mp_fondo == null) {
@@ -87,43 +74,39 @@ public class MainActivity extends AppCompatActivity {
             mp_fondo.setLooping(true);
         });
 
-        SoundPool sp = new SoundPool.Builder().setMaxStreams(3).build();
-        int bombos = sp.load(getApplicationContext(), R.raw.bombos, 1);
-        int bombo = sp.load(getApplicationContext(), R.raw.bombo, 1);
-        int caja = sp.load(getApplicationContext(), R.raw.caja, 1);
-        int platillos = sp.load(getApplicationContext(), R.raw.platillos, 1);
+        SoundPool sp = new SoundPool.Builder().setMaxStreams(5).build();
+        int sonidoBombo = sp.load(getApplicationContext(), R.raw.bombo, 1);
+        int sonidoCaja = sp.load(getApplicationContext(), R.raw.caja, 1);
+        int sonidoPlatillo = sp.load(getApplicationContext(), R.raw.platillos, 1);
 
-        btn_bombos.setOnClickListener(view -> sp.play(bombos, 1, 1, 0, 0, 1));
-        btn_bombo.setOnClickListener(view -> sp.play(bombo, 1, 1, 0, 0, 1));
-        btn_caja.setOnClickListener(view -> sp.play(caja, 1, 1, 0, 0, 1));
-        btn_platillo.setOnClickListener(view -> sp.play(platillos, 1, 1, 0, 0, 1));
+        btn_bombos.setOnClickListener(view -> sp.play(sonidoBombo, 1, 1, 0, 0, 1));
+        btn_caja.setOnClickListener(view -> sp.play(sonidoCaja, 1, 1, 0, 0, 1));
+        btn_platillo.setOnClickListener(view -> sp.play(sonidoPlatillo, 1, 1, 0, 0, 1));
 
-        List lst_canciones = new ArrayList<String>();
-        lst_canciones.add("WYA");
-        lst_canciones.add("Chill");
-        lst_canciones.add("Badgyal");
-        lst_canciones.add("Halo");
+        List<String> canciones = new ArrayList<>();
+        canciones.add("wya");
+        canciones.add("Chill");
+        canciones.add("halo");
+        canciones.add("badgyal");
 
-        lv_canciones.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, lst_canciones));
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, canciones);
+        lv_canciones.setAdapter(adapter);
 
-        lv_canciones.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int posicion, long l) {
-                if (posicion == 0) {
-                    iniciar(R.raw.wya);
-                } else if (posicion == 1) {
-                    iniciar(R.raw.fondo);
-                } else if (posicion == 2) {
-                    iniciar(R.raw.badgyal);
-                } else if (posicion == 3) {
-                    iniciar(R.raw.halo);
-                }
+        lv_canciones.setOnItemClickListener((adapterView, view, i, l) -> {
+            if (i == 0) {
+                cambiarCancionFondo(R.raw.wya);
+            } else if (i == 1) {
+                cambiarCancionFondo(R.raw.fondo);
+            } else if (i == 2) {
+                cambiarCancionFondo(R.raw.halo);
+            } else if (i == 3) {
+                cambiarCancionFondo(R.raw.badgyal);
             }
         });
     }
 
-    public void iniciar(int cancion) {
-        if (mp_fondo != null && mp_fondo.isPlaying()) {
+    public void cambiarCancionFondo(int cancion) {
+        if (mp_fondo.isPlaying()) {
             mp_fondo.stop();
             mp_fondo.release();
         }
@@ -133,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         mp_fondo.start();
         startTimer();
     }
+
 
     public void mostrarTiempos() {
         mostarTimeMMSS(mp_fondo.getCurrentPosition(), str_inicio);
